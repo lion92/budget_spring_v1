@@ -10,7 +10,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Users {
 
     @Setter
     @Getter
