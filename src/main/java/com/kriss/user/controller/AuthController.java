@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,13 +31,17 @@ public class AuthController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "Utilisateur créé",
                             content = @Content(schema = @Schema(implementation = AuthResponse.class))),
-                    @ApiResponse(responseCode = "500", description = "Email déjà utilisé ou erreur serveur")
+                    @ApiResponse(responseCode = "409", description = "Email déjà utilisé")
             }
     )
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody AuthRequest request) {
-        Users user = userService.register(request.getEmail(), request.getPassword());
-        return ResponseEntity.ok(new AuthResponse(user.getId(), user.getEmail(), "Inscription réussie"));
+        try {
+            Users user = userService.register(request.getEmail(), request.getPassword());
+            return ResponseEntity.ok(new AuthResponse(user.getId(), user.getEmail(), "Inscription réussie"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
     @Operation(
@@ -45,12 +50,16 @@ public class AuthController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "Connexion réussie",
                             content = @Content(schema = @Schema(implementation = AuthResponse.class))),
-                    @ApiResponse(responseCode = "500", description = "Email ou mot de passe incorrect")
+                    @ApiResponse(responseCode = "401", description = "Email ou mot de passe incorrect")
             }
     )
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        Users user = userService.login(request.getEmail(), request.getPassword());
-        return ResponseEntity.ok(new AuthResponse(user.getId(), user.getEmail(), "Connexion réussie"));
+        try {
+            Users user = userService.login(request.getEmail(), request.getPassword());
+            return ResponseEntity.ok(new AuthResponse(user.getId(), user.getEmail(), "Connexion réussie"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 }

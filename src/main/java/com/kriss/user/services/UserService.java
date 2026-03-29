@@ -14,9 +14,13 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public Users register(String email, String password) {
-        Users user = new Users();
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new IllegalArgumentException("Email déjà utilisé");
+        }
+        Users user = Users.builder()
+                .email(email)
+                .password(passwordEncoder.encode(password))
+                .build();
         return userRepository.save(user);
     }
 

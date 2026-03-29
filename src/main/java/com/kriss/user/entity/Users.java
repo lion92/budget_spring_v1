@@ -1,19 +1,17 @@
 package com.kriss.user.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.transaction.Transaction;
+import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
-@Data
+@Getter
+@Builder
 @NoArgsConstructor
-@AllArgsConstructor
 public class Users {
 
-    @Setter
-    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,4 +20,24 @@ public class Users {
 
     private String password;
 
+    @OneToMany(mappedBy = "user")
+    private List<Transaction> transactions;
+
+    public Users(Long id, String email, String password, List<Transaction> transactions) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.transactions = transactions;
+    }
+
+    public Users(Long id, String email) {
+        this.id = id;
+        this.email = email;
+    }
+
+    public Users(Long id, String email, List<Transaction> transactions) {
+        this.id = id;
+        this.email = email;
+        this.transactions = transactions;
+    }
 }
